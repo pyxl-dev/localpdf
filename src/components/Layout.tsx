@@ -26,7 +26,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             LocalPDF
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/pyxl-dev/localpdf"
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-400 hover:text-white transition-colors"

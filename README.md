@@ -31,12 +31,12 @@ LocalPDF processes everything **client-side** using JavaScript. Your PDF files a
 
 ### Online
 
-Visit the hosted version (zero server processing, everything runs in your browser).
+Visit **[pyxl-dev.github.io/localpdf](https://pyxl-dev.github.io/localpdf/)** — zero server processing, everything runs in your browser.
 
 ### Docker
 
 ```bash
-docker run -p 8080:80 ghcr.io/OWNER/localpdf:latest
+docker run -p 8080:80 ghcr.io/pyxl-dev/localpdf:latest
 ```
 
 Then open http://localhost:8080
@@ -46,7 +46,7 @@ Then open http://localhost:8080
 ```yaml
 services:
   localpdf:
-    image: ghcr.io/OWNER/localpdf:latest
+    image: ghcr.io/pyxl-dev/localpdf:latest
     ports:
       - "8080:80"
     restart: unless-stopped
@@ -59,7 +59,7 @@ docker compose up -d
 ### Build from source
 
 ```bash
-git clone https://github.com/OWNER/localpdf.git
+git clone https://github.com/pyxl-dev/localpdf.git
 cd localpdf
 npm install
 npm run dev
