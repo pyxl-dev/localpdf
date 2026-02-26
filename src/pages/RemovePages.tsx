@@ -10,7 +10,7 @@ export default function RemovePages() {
   const [toRemove, setToRemove] = useState<Set<number>>(new Set())
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { thumbnails, loading } = usePdfPages(file)
+  const { thumbnails, loading, loadFile, reset } = usePdfPages()
 
   const handleFiles = useCallback((files: File[]) => {
     const pdf = files.find((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
@@ -18,8 +18,9 @@ export default function RemovePages() {
       setFile(pdf)
       setToRemove(new Set())
       setError(null)
+      loadFile(pdf)
     }
-  }, [])
+  }, [loadFile])
 
   const togglePage = useCallback((index: number) => {
     setToRemove((prev) => {
@@ -64,7 +65,7 @@ export default function RemovePages() {
               <span className="text-slate-500 text-xs">{thumbnails.length} pages</span>
             </div>
             <button
-              onClick={() => { setFile(null); setToRemove(new Set()) }}
+              onClick={() => { setFile(null); setToRemove(new Set()); reset() }}
               className="text-slate-400 hover:text-white text-sm transition-colors"
             >
               Change file

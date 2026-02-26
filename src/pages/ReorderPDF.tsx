@@ -11,15 +11,16 @@ export default function ReorderPDF() {
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { thumbnails, loading } = usePdfPages(file)
+  const { thumbnails, loading, loadFile, reset } = usePdfPages()
 
   const handleFiles = useCallback((files: File[]) => {
     const pdf = files.find((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
     if (pdf) {
       setFile(pdf)
       setError(null)
+      loadFile(pdf)
     }
-  }, [])
+  }, [loadFile])
 
   // Initialize order when thumbnails load
   if (thumbnails.length > 0 && order.length !== thumbnails.length) {
@@ -77,7 +78,7 @@ export default function ReorderPDF() {
               <span className="text-slate-500 text-xs">{thumbnails.length} pages</span>
             </div>
             <button
-              onClick={() => { setFile(null); setOrder([]) }}
+              onClick={() => { setFile(null); setOrder([]); reset() }}
               className="text-slate-400 hover:text-white text-sm transition-colors"
             >
               Change file

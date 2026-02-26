@@ -10,7 +10,7 @@ export default function RotatePDF() {
   const [rotations, setRotations] = useState<Record<number, number>>({})
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { thumbnails, loading } = usePdfPages(file)
+  const { thumbnails, loading, loadFile, reset } = usePdfPages()
 
   const handleFiles = useCallback((files: File[]) => {
     const pdf = files.find((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
@@ -18,8 +18,9 @@ export default function RotatePDF() {
       setFile(pdf)
       setRotations({})
       setError(null)
+      loadFile(pdf)
     }
-  }, [])
+  }, [loadFile])
 
   const rotate = useCallback((index: number, deg: number) => {
     setRotations((prev) => ({
@@ -91,7 +92,7 @@ export default function RotatePDF() {
               </button>
               <span className="text-slate-600">·</span>
               <button
-                onClick={() => { setFile(null); setRotations({}) }}
+                onClick={() => { setFile(null); setRotations({}); reset() }}
                 className="text-slate-400 hover:text-white text-xs transition-colors"
               >
                 Change file

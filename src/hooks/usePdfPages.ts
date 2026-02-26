@@ -1,36 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { renderAllThumbnails } from '../lib/pdf-renderer'
 
-export function usePdfPages(file: File | null) {
+export function usePdfPages() {
   const [thumbnails, setThumbnails] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (!file) {
-      setThumbnails([])
-      return
-    }
-
-    let cancelled = false
+  const loadFile = useCallback(async (file: File) => {
     setLoading(true)
-
-    file
-      .arrayBuffer()
-      .then((buffer) => renderAllThumbnails(buffer))
-      .then((thumbs) => {
-        if (!cancelled) {
-          setThumbnails(thumbs)
-          setLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
+    try {
+      const buffer = await file.arrayBuffer()
+      const thumbs = await renderAllThumbnails(buffer)
+      setThumbnails(thumbs)
+    } catch {
+      setThumbnails([])
+    } finally {
+      setLoading(false)
     }
-  }, [file])
+  }, [])
 
-  return { thumbnails, loading, pageCount: thumbnails.length }
+  const reset = useCallback(() => {
+    setThumbnails([])
+    setLoading(false)
+  }, [])
+
+  return { thumbnails, loading, pageCount: thumbnails.length, loadFile, reset }
 }

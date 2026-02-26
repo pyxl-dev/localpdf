@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { readMetadata, updateMetadata } from '../lib/pdf-operations'
@@ -12,34 +12,27 @@ export default function EditMetadata() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const loadMetadata = useCallback(async (pdf: File) => {
+    setLoading(true)
+    try {
+      const buf = await pdf.arrayBuffer()
+      const meta = await readMetadata(buf)
+      setMetadata(meta)
+    } catch {
+      setMetadata({})
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const handleFiles = useCallback((files: File[]) => {
     const pdf = files.find((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
     if (pdf) {
       setFile(pdf)
       setError(null)
+      loadMetadata(pdf)
     }
-  }, [])
-
-  useEffect(() => {
-    if (!file) return
-    let cancelled = false
-    setLoading(true)
-    file
-      .arrayBuffer()
-      .then((buf) => readMetadata(buf))
-      .then((meta) => {
-        if (!cancelled) {
-          setMetadata(meta)
-          setLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [file])
+  }, [loadMetadata])
 
   const handleField = (field: keyof PdfMetadata, value: string) => {
     setMetadata((prev) => ({
