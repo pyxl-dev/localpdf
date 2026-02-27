@@ -118,10 +118,26 @@ export default function ReorderPDF() {
           {/* Move controls — sticky bar when a page is selected */}
           {selectedIdx !== null && (
             <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur border border-slate-700 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-2">
-              <span className="text-slate-300 text-sm font-medium">
-                Page #{order[selectedIdx] + 1}
-                <span className="text-slate-500 ml-1.5">→ pos {selectedIdx + 1}</span>
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-slate-300 text-sm font-medium whitespace-nowrap">
+                  Page #{order[selectedIdx] + 1} →
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={order.length}
+                  value={selectedIdx + 1}
+                  onChange={(e) => {
+                    const target = Math.max(0, Math.min(order.length - 1, parseInt(e.target.value, 10) - 1))
+                    if (!isNaN(target)) {
+                      moveItem(selectedIdx, target)
+                      setSelectedIdx(target)
+                    }
+                  }}
+                  className="w-14 bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-center text-sm text-white focus:outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span className="text-slate-500 text-sm">/ {order.length}</span>
+              </div>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => moveSelected('start')}
