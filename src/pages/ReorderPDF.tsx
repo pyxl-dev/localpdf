@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { usePdfPages } from '../hooks/usePdfPages'
@@ -18,10 +18,6 @@ export default function ReorderPDF() {
   const { thumbnails, loading, loadFile, reset } = usePdfPages()
   const gridRef = useRef<HTMLDivElement>(null)
   const [posInput, setPosInput] = useState('')
-
-  useEffect(() => {
-    setPosInput(selectedIdx !== null ? String(selectedIdx + 1) : '')
-  }, [selectedIdx])
 
   const handleFiles = useCallback((files: File[]) => {
     const pdf = files.find((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
@@ -44,12 +40,15 @@ export default function ReorderPDF() {
       next.splice(toIdx, 0, item)
       return next
     })
-    return toIdx
   }, [])
 
   // Tap to select / deselect
   const handleTap = useCallback((visualIdx: number) => {
-    setSelectedIdx((prev) => (prev === visualIdx ? null : visualIdx))
+    setSelectedIdx((prev) => {
+      const next = prev === visualIdx ? null : visualIdx
+      setPosInput(next !== null ? String(next + 1) : '')
+      return next
+    })
   }, [])
 
   // Move selected page
@@ -65,6 +64,7 @@ export default function ReorderPDF() {
     }
     moveItem(selectedIdx, target)
     setSelectedIdx(target)
+    setPosInput(String(target + 1))
   }, [selectedIdx, order.length, moveItem])
 
   // Desktop drag (kept for mouse users)
@@ -79,6 +79,7 @@ export default function ReorderPDF() {
       if (dragIdx !== null) {
         moveItem(dragIdx, targetIdx)
         setSelectedIdx(targetIdx)
+        setPosInput(String(targetIdx + 1))
       }
       setDragIdx(null)
       setOverIdx(null)
@@ -113,7 +114,7 @@ export default function ReorderPDF() {
               <span className="text-slate-500 text-xs">{t('common.pages', { count: thumbnails.length })}</span>
             </div>
             <button
-              onClick={() => { setFile(null); setOrder([]); setSelectedIdx(null); reset() }}
+              onClick={() => { setFile(null); setOrder([]); setSelectedIdx(null); setPosInput(''); reset() }}
               className="text-slate-400 hover:text-white text-sm transition-colors"
             >
               {t('common.changeFile')}
@@ -138,6 +139,7 @@ export default function ReorderPDF() {
                       const target = n - 1
                       moveItem(selectedIdx, target)
                       setSelectedIdx(target)
+                      setPosInput(String(target + 1))
                     } else {
                       setPosInput(selectedIdx !== null ? String(selectedIdx + 1) : '')
                     }
@@ -192,7 +194,7 @@ export default function ReorderPDF() {
                 </button>
                 <div className="w-px h-6 bg-slate-700 mx-1" />
                 <button
-                  onClick={() => setSelectedIdx(null)}
+                  onClick={() => { setSelectedIdx(null); setPosInput('') }}
                   className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -253,7 +255,7 @@ export default function ReorderPDF() {
               {processing ? t('reorder.processing') : t('reorder.button')}
             </button>
             <button
-              onClick={() => { setOrder(thumbnails.map((_, i) => i)); setSelectedIdx(null) }}
+              onClick={() => { setOrder(thumbnails.map((_, i) => i)); setSelectedIdx(null); setPosInput('') }}
               className="px-4 py-3 text-slate-400 hover:text-white text-sm transition-colors"
             >
               {t('reorder.reset')}
