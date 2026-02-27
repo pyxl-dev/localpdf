@@ -1,4 +1,5 @@
 import { useCallback, useState, useRef } from 'react'
+import { useTranslation } from '../i18n/useTranslation'
 
 interface FileDropzoneProps {
   accept?: string
@@ -15,6 +16,7 @@ export default function FileDropzone({
   label,
   hint,
 }: FileDropzoneProps) {
+  const { t } = useTranslation()
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -80,9 +82,9 @@ export default function FileDropzone({
           />
         </svg>
         <p className="text-slate-300 font-medium text-lg">
-          {label ?? 'Drop your files here'}
+          {label ?? t('common.drop')}
         </p>
-        <p className="text-slate-500 text-sm">{hint ?? 'or click to browse'}</p>
+        <p className="text-slate-500 text-sm">{hint ?? t('common.browse')}</p>
       </div>
       <input
         ref={inputRef}

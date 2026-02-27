@@ -143,10 +143,11 @@ const en = {
 
   // Common
   'common.drop': 'Drop a PDF file here',
+  'common.browse': 'or click to browse',
   'common.changeFile': 'Change file',
   'common.pages': '{count} pages',
   'common.loading': 'Loading pages...',
-  'common.allTools': '← All tools',
+  'common.allTools': 'All tools',
   'common.footer': '100% client-side · Your files never leave your browser',
   'common.footer.mit': 'Open Source (MIT)',
   'common.footer.notrack': 'No tracking',
@@ -279,10 +280,11 @@ const fr: Record<TranslationKey, string> = {
   'watermark.error': "Échec de l'ajout du filigrane",
 
   'common.drop': 'Déposez un fichier PDF ici',
+  'common.browse': 'ou cliquez pour parcourir',
   'common.changeFile': 'Changer de fichier',
   'common.pages': '{count} pages',
   'common.loading': 'Chargement des pages...',
-  'common.allTools': '← Tous les outils',
+  'common.allTools': 'Tous les outils',
   'common.footer': '100% côté client · Vos fichiers ne quittent jamais votre navigateur',
   'common.footer.mit': 'Open Source (MIT)',
   'common.footer.notrack': 'Aucun tracking',
@@ -413,10 +415,11 @@ const es: Record<TranslationKey, string> = {
   'watermark.error': 'Error al añadir marca de agua',
 
   'common.drop': 'Suelta un archivo PDF aquí',
+  'common.browse': 'o haz clic para buscar',
   'common.changeFile': 'Cambiar archivo',
   'common.pages': '{count} páginas',
   'common.loading': 'Cargando páginas...',
-  'common.allTools': '← Todas las herramientas',
+  'common.allTools': 'Todas las herramientas',
   'common.footer': '100% en el navegador · Tus archivos nunca salen de tu navegador',
   'common.footer.mit': 'Código Abierto (MIT)',
   'common.footer.notrack': 'Sin rastreo',
