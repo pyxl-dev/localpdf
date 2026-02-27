@@ -6,11 +6,12 @@ import { LanguageContext } from './context'
 
 function detectLocale(): Locale {
   const saved = localStorage.getItem('localpdf-lang')
-  if (saved === 'fr' || saved === 'en' || saved === 'es') return saved
+  if (saved === 'fr' || saved === 'en' || saved === 'es' || saved === 'it') return saved
 
   const browserLang = navigator.language.slice(0, 2)
   if (browserLang === 'fr') return 'fr'
   if (browserLang === 'es') return 'es'
+  if (browserLang === 'it') return 'it'
   return 'en'
 }
 

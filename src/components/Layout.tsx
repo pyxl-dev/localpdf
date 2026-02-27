@@ -4,7 +4,7 @@ import { useTranslation } from '../i18n/useTranslation'
 import { localeNames } from '../i18n/translations'
 import type { Locale } from '../i18n/translations'
 
-const locales: Locale[] = ['en', 'fr', 'es']
+const locales: Locale[] = ['en', 'fr', 'es', 'it']
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { locale, setLocale, t } = useTranslation()
