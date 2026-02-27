@@ -38,6 +38,8 @@ const en = {
   'tool.watermark.desc': 'Add a text watermark overlay.',
   'tool.markdown.title': 'Markdown to PDF',
   'tool.markdown.desc': 'Convert Markdown text into a PDF document.',
+  'tool.html.title': 'HTML to PDF',
+  'tool.html.desc': 'Convert HTML code into a PDF document.',
 
   // Merge page
   'merge.title': 'Merge PDF',
@@ -160,6 +162,19 @@ const en = {
   'markdown.editor': 'Editor',
   'markdown.clear': 'Clear',
 
+  // HTML to PDF
+  'html.title': 'HTML to PDF',
+  'html.description': 'Upload or paste HTML code and convert it to a PDF document.',
+  'html.placeholder': '<h1>Hello World</h1>\n<p>Paste your <strong>HTML</strong> here...</p>',
+  'html.drop': 'Drop an HTML file here',
+  'html.hint': 'or click to browse — .html or .htm files',
+  'html.button': 'Convert to PDF',
+  'html.converting': 'Converting...',
+  'html.error': 'Failed to convert HTML to PDF',
+  'html.preview': 'Preview',
+  'html.editor': 'HTML Code',
+  'html.clear': 'Clear',
+
   // Common
   'common.drop': 'Drop a PDF file here',
   'common.browse': 'or click to browse',
@@ -204,6 +219,8 @@ const fr: Record<TranslationKey, string> = {
   'tool.watermark.desc': 'Ajouter un filigrane texte sur les pages.',
   'tool.markdown.title': 'Markdown en PDF',
   'tool.markdown.desc': 'Convertir du texte Markdown en document PDF.',
+  'tool.html.title': 'HTML en PDF',
+  'tool.html.desc': 'Convertir du code HTML en document PDF.',
 
   'merge.title': 'Fusionner des PDF',
   'merge.description': 'Combiner plusieurs fichiers PDF en un seul document. Glissez pour réordonner.',
@@ -316,6 +333,18 @@ const fr: Record<TranslationKey, string> = {
   'markdown.editor': 'Éditeur',
   'markdown.clear': 'Effacer',
 
+  'html.title': 'HTML en PDF',
+  'html.description': 'Importez ou collez du code HTML et convertissez-le en document PDF.',
+  'html.placeholder': '<h1>Bonjour</h1>\n<p>Collez votre <strong>HTML</strong> ici...</p>',
+  'html.drop': 'Déposez un fichier HTML ici',
+  'html.hint': 'ou cliquez pour parcourir — fichiers .html ou .htm',
+  'html.button': 'Convertir en PDF',
+  'html.converting': 'Conversion...',
+  'html.error': 'Échec de la conversion HTML en PDF',
+  'html.preview': 'Aperçu',
+  'html.editor': 'Code HTML',
+  'html.clear': 'Effacer',
+
   'common.drop': 'Déposez un fichier PDF ici',
   'common.browse': 'ou cliquez pour parcourir',
   'common.changeFile': 'Changer de fichier',
@@ -357,6 +386,8 @@ const es: Record<TranslationKey, string> = {
   'tool.watermark.desc': 'Añadir una marca de agua de texto.',
   'tool.markdown.title': 'Markdown a PDF',
   'tool.markdown.desc': 'Convertir texto Markdown en un documento PDF.',
+  'tool.html.title': 'HTML a PDF',
+  'tool.html.desc': 'Convertir código HTML en un documento PDF.',
 
   'merge.title': 'Fusionar PDF',
   'merge.description': 'Combinar varios archivos PDF en un solo documento. Arrastra para reordenar.',
@@ -468,6 +499,18 @@ const es: Record<TranslationKey, string> = {
   'markdown.preview': 'Vista previa',
   'markdown.editor': 'Editor',
   'markdown.clear': 'Borrar',
+
+  'html.title': 'HTML a PDF',
+  'html.description': 'Sube o pega código HTML y conviértelo en un documento PDF.',
+  'html.placeholder': '<h1>Hola Mundo</h1>\n<p>Pega tu <strong>HTML</strong> aquí...</p>',
+  'html.drop': 'Suelta un archivo HTML aquí',
+  'html.hint': 'o haz clic para explorar — archivos .html o .htm',
+  'html.button': 'Convertir a PDF',
+  'html.converting': 'Convirtiendo...',
+  'html.error': 'Error al convertir HTML a PDF',
+  'html.preview': 'Vista previa',
+  'html.editor': 'Código HTML',
+  'html.clear': 'Borrar',
 
   'common.drop': 'Suelta un archivo PDF aquí',
   'common.browse': 'o haz clic para buscar',
