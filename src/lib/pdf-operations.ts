@@ -3,7 +3,7 @@ import { PDFDocument, StandardFonts, rgb, degrees } from 'pdf-lib'
 export async function mergePDFs(files: ArrayBuffer[]): Promise<Uint8Array> {
   const mergedPdf = await PDFDocument.create()
   for (const file of files) {
-    const pdf = await PDFDocument.load(file)
+    const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
     const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
     for (const page of pages) {
       mergedPdf.addPage(page)
@@ -16,7 +16,7 @@ export async function extractPages(
   file: ArrayBuffer,
   pageIndices: number[],
 ): Promise<Uint8Array> {
-  const srcPdf = await PDFDocument.load(file)
+  const srcPdf = await PDFDocument.load(file, { ignoreEncryption: true })
   const newPdf = await PDFDocument.create()
   const pages = await newPdf.copyPages(srcPdf, pageIndices)
   for (const page of pages) {
@@ -29,7 +29,7 @@ export async function reorderPages(
   file: ArrayBuffer,
   newOrder: number[],
 ): Promise<Uint8Array> {
-  const srcPdf = await PDFDocument.load(file)
+  const srcPdf = await PDFDocument.load(file, { ignoreEncryption: true })
   const newPdf = await PDFDocument.create()
   const pages = await newPdf.copyPages(srcPdf, newOrder)
   for (const page of pages) {
@@ -42,7 +42,7 @@ export async function rotatePages(
   file: ArrayBuffer,
   rotations: Record<number, number>,
 ): Promise<Uint8Array> {
-  const pdf = await PDFDocument.load(file)
+  const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
   const pages = pdf.getPages()
   for (const [index, rotation] of Object.entries(rotations)) {
     const page = pages[Number(index)]
@@ -59,7 +59,7 @@ export async function removePages(
   pageIndicesToRemove: number[],
 ): Promise<Uint8Array> {
   const sorted = [...pageIndicesToRemove].sort((a, b) => b - a)
-  const pdf = await PDFDocument.load(file)
+  const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
   for (const index of sorted) {
     pdf.removePage(index)
   }
@@ -90,7 +90,7 @@ export interface PdfMetadata {
 }
 
 export async function readMetadata(file: ArrayBuffer): Promise<PdfMetadata> {
-  const pdf = await PDFDocument.load(file)
+  const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
   return {
     title: pdf.getTitle() ?? '',
     author: pdf.getAuthor() ?? '',
@@ -104,7 +104,7 @@ export async function updateMetadata(
   file: ArrayBuffer,
   metadata: PdfMetadata,
 ): Promise<Uint8Array> {
-  const pdf = await PDFDocument.load(file)
+  const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
   if (metadata.title !== undefined) pdf.setTitle(metadata.title)
   if (metadata.author !== undefined) pdf.setAuthor(metadata.author)
   if (metadata.subject !== undefined) pdf.setSubject(metadata.subject)
@@ -129,7 +129,7 @@ export async function addPageNumbers(
   file: ArrayBuffer,
   options: PageNumberOptions,
 ): Promise<Uint8Array> {
-  const pdf = await PDFDocument.load(file)
+  const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const pages = pdf.getPages()
   const { position, fontSize = 12, startFrom = 1 } = options
@@ -164,7 +164,7 @@ export async function addWatermark(
   file: ArrayBuffer,
   options: WatermarkOptions,
 ): Promise<Uint8Array> {
-  const pdf = await PDFDocument.load(file)
+  const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
   const font = await pdf.embedFont(StandardFonts.HelveticaBold)
   const { text, fontSize = 60, opacity = 0.15, rotation = 45 } = options
   const pages = pdf.getPages()
@@ -187,6 +187,6 @@ export async function addWatermark(
 }
 
 export async function getPageCount(file: ArrayBuffer): Promise<number> {
-  const pdf = await PDFDocument.load(file)
+  const pdf = await PDFDocument.load(file, { ignoreEncryption: true })
   return pdf.getPageCount()
 }
