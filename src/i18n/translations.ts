@@ -36,6 +36,8 @@ const en = {
   'tool.pagenumbers.desc': 'Add page numbers to every page.',
   'tool.watermark.title': 'Watermark',
   'tool.watermark.desc': 'Add a text watermark overlay.',
+  'tool.markdown.title': 'Markdown to PDF',
+  'tool.markdown.desc': 'Convert Markdown text into a PDF document.',
 
   // Merge page
   'merge.title': 'Merge PDF',
@@ -145,6 +147,19 @@ const en = {
   'watermark.processing': 'Processing...',
   'watermark.error': 'Failed to add watermark',
 
+  // Markdown to PDF
+  'markdown.title': 'Markdown to PDF',
+  'markdown.description': 'Write or paste Markdown text and convert it to a beautifully formatted PDF.',
+  'markdown.placeholder': '# Hello World\n\nStart typing your **Markdown** here...',
+  'markdown.drop': 'Drop a Markdown file here',
+  'markdown.hint': 'or click to browse — .md or .txt files',
+  'markdown.button': 'Convert to PDF',
+  'markdown.converting': 'Converting...',
+  'markdown.error': 'Failed to convert Markdown to PDF',
+  'markdown.preview': 'Preview',
+  'markdown.editor': 'Editor',
+  'markdown.clear': 'Clear',
+
   // Common
   'common.drop': 'Drop a PDF file here',
   'common.browse': 'or click to browse',
@@ -187,6 +202,8 @@ const fr: Record<TranslationKey, string> = {
   'tool.pagenumbers.desc': 'Ajouter des numéros sur chaque page.',
   'tool.watermark.title': 'Filigrane',
   'tool.watermark.desc': 'Ajouter un filigrane texte sur les pages.',
+  'tool.markdown.title': 'Markdown en PDF',
+  'tool.markdown.desc': 'Convertir du texte Markdown en document PDF.',
 
   'merge.title': 'Fusionner des PDF',
   'merge.description': 'Combiner plusieurs fichiers PDF en un seul document. Glissez pour réordonner.',
@@ -287,6 +304,18 @@ const fr: Record<TranslationKey, string> = {
   'watermark.processing': 'Traitement...',
   'watermark.error': "Échec de l'ajout du filigrane",
 
+  'markdown.title': 'Markdown en PDF',
+  'markdown.description': 'Écrivez ou collez du texte Markdown et convertissez-le en un PDF bien formaté.',
+  'markdown.placeholder': '# Bonjour\n\nCommencez à écrire votre **Markdown** ici...',
+  'markdown.drop': 'Déposez un fichier Markdown ici',
+  'markdown.hint': 'ou cliquez pour parcourir — fichiers .md ou .txt',
+  'markdown.button': 'Convertir en PDF',
+  'markdown.converting': 'Conversion...',
+  'markdown.error': 'Échec de la conversion Markdown en PDF',
+  'markdown.preview': 'Aperçu',
+  'markdown.editor': 'Éditeur',
+  'markdown.clear': 'Effacer',
+
   'common.drop': 'Déposez un fichier PDF ici',
   'common.browse': 'ou cliquez pour parcourir',
   'common.changeFile': 'Changer de fichier',
@@ -326,6 +355,8 @@ const es: Record<TranslationKey, string> = {
   'tool.pagenumbers.desc': 'Añadir números en cada página.',
   'tool.watermark.title': 'Marca de agua',
   'tool.watermark.desc': 'Añadir una marca de agua de texto.',
+  'tool.markdown.title': 'Markdown a PDF',
+  'tool.markdown.desc': 'Convertir texto Markdown en un documento PDF.',
 
   'merge.title': 'Fusionar PDF',
   'merge.description': 'Combinar varios archivos PDF en un solo documento. Arrastra para reordenar.',
@@ -425,6 +456,18 @@ const es: Record<TranslationKey, string> = {
   'watermark.button': 'Añadir marca y descargar',
   'watermark.processing': 'Procesando...',
   'watermark.error': 'Error al añadir marca de agua',
+
+  'markdown.title': 'Markdown a PDF',
+  'markdown.description': 'Escribe o pega texto Markdown y conviértelo en un PDF bien formateado.',
+  'markdown.placeholder': '# Hola Mundo\n\nEmpieza a escribir tu **Markdown** aquí...',
+  'markdown.drop': 'Suelta un archivo Markdown aquí',
+  'markdown.hint': 'o haz clic para explorar — archivos .md o .txt',
+  'markdown.button': 'Convertir a PDF',
+  'markdown.converting': 'Convirtiendo...',
+  'markdown.error': 'Error al convertir Markdown a PDF',
+  'markdown.preview': 'Vista previa',
+  'markdown.editor': 'Editor',
+  'markdown.clear': 'Borrar',
 
   'common.drop': 'Suelta un archivo PDF aquí',
   'common.browse': 'o haz clic para buscar',

@@ -10,6 +10,7 @@ import ImagesToPDF from './pages/ImagesToPDF'
 import EditMetadata from './pages/ProtectPDF'
 import AddPageNumbers from './pages/AddPageNumbers'
 import WatermarkPDF from './pages/WatermarkPDF'
+import MarkdownToPDF from './pages/MarkdownToPDF'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/metadata" element={<EditMetadata />} />
         <Route path="/page-numbers" element={<AddPageNumbers />} />
         <Route path="/watermark" element={<WatermarkPDF />} />
+        <Route path="/markdown-to-pdf" element={<MarkdownToPDF />} />
       </Routes>
     </Layout>
   )
