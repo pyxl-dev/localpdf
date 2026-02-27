@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { usePdfPages } from '../hooks/usePdfPages'
@@ -28,22 +28,71 @@ export default function ReorderPDF() {
     setOrder(thumbnails.map((_, i) => i))
   }
 
-  const handleDragStart = useCallback((idx: number) => { setDragIdx(idx) }, [])
-  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault() }, [])
+  const [overIdx, setOverIdx] = useState<number | null>(null)
+  const touchState = useRef<{ startIdx: number; el: HTMLDivElement | null }>({ startIdx: -1, el: null })
+  const gridRef = useRef<HTMLDivElement>(null)
 
+  const moveItem = useCallback((fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return
+    setOrder((prev) => {
+      const next = [...prev]
+      const [item] = next.splice(fromIdx, 1)
+      next.splice(toIdx, 0, item)
+      return next
+    })
+  }, [])
+
+  // Desktop drag
+  const handleDragStart = useCallback((idx: number) => { setDragIdx(idx) }, [])
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault()
+    setOverIdx(idx)
+  }, [])
+  const handleDragLeave = useCallback(() => { setOverIdx(null) }, [])
   const handleDrop = useCallback(
     (targetIdx: number) => {
-      if (dragIdx === null || dragIdx === targetIdx) return
-      setOrder((prev) => {
-        const next = [...prev]
-        const [item] = next.splice(dragIdx, 1)
-        next.splice(targetIdx, 0, item)
-        return next
-      })
+      if (dragIdx !== null) moveItem(dragIdx, targetIdx)
       setDragIdx(null)
+      setOverIdx(null)
     },
-    [dragIdx],
+    [dragIdx, moveItem],
   )
+  const handleDragEnd = useCallback(() => { setDragIdx(null); setOverIdx(null) }, [])
+
+  // Mobile touch
+  const getIdxFromPoint = useCallback((x: number, y: number): number | null => {
+    const grid = gridRef.current
+    if (!grid) return null
+    const children = Array.from(grid.children) as HTMLElement[]
+    for (let i = 0; i < children.length; i++) {
+      const rect = children[i].getBoundingClientRect()
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return i
+    }
+    return null
+  }, [])
+
+  const handleTouchStart = useCallback((idx: number, e: React.TouchEvent) => {
+    const el = e.currentTarget as HTMLDivElement
+    touchState.current = { startIdx: idx, el }
+    setDragIdx(idx)
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault()
+    const touch = e.touches[0]
+    const target = getIdxFromPoint(touch.clientX, touch.clientY)
+    setOverIdx(target)
+  }, [getIdxFromPoint])
+
+  const handleTouchEnd = useCallback(() => {
+    const fromIdx = touchState.current.startIdx
+    if (fromIdx >= 0 && overIdx !== null && fromIdx !== overIdx) {
+      moveItem(fromIdx, overIdx)
+    }
+    touchState.current = { startIdx: -1, el: null }
+    setDragIdx(null)
+    setOverIdx(null)
+  }, [overIdx, moveItem])
 
   const handleReorder = async () => {
     if (!file || order.length === 0) return
@@ -81,19 +130,28 @@ export default function ReorderPDF() {
           {loading ? (
             <div className="text-center py-16 text-slate-500">{t('common.loading')}</div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            <div ref={gridRef} className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {order.map((pageIdx, visualIdx) => (
                 <div
                   key={`${pageIdx}-${visualIdx}`}
                   draggable
                   onDragStart={() => handleDragStart(visualIdx)}
-                  onDragOver={handleDragOver}
+                  onDragOver={(e) => handleDragOver(e, visualIdx)}
+                  onDragLeave={handleDragLeave}
                   onDrop={() => handleDrop(visualIdx)}
-                  className={`relative rounded-lg overflow-hidden border-2 border-slate-700 hover:border-blue-500/50 cursor-grab active:cursor-grabbing transition-all ${
-                    dragIdx === visualIdx ? 'opacity-40' : ''
+                  onDragEnd={handleDragEnd}
+                  onTouchStart={(e) => handleTouchStart(visualIdx, e)}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  className={`relative rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing transition-all select-none ${
+                    dragIdx === visualIdx
+                      ? 'opacity-40 border-slate-700'
+                      : overIdx === visualIdx
+                        ? 'border-blue-500 scale-105'
+                        : 'border-slate-700 hover:border-blue-500/50'
                   }`}
                 >
-                  <img src={thumbnails[pageIdx]} alt={`Page ${pageIdx + 1}`} className="w-full pointer-events-none" />
+                  <img src={thumbnails[pageIdx]} alt={`Page ${pageIdx + 1}`} className="w-full pointer-events-none" draggable={false} />
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1 flex justify-between items-center">
                     <span className="text-white text-xs font-medium">#{pageIdx + 1}</span>
                     <span className="text-slate-300 text-xs">pos {visualIdx + 1}</span>
