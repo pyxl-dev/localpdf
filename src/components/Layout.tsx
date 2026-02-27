@@ -33,21 +33,17 @@ export default function Layout({ children }: { children: ReactNode }) {
             LocalPDF
           </Link>
           <div className="flex items-center gap-3">
-            <div className="flex items-center bg-slate-900 rounded-lg border border-slate-800 overflow-hidden">
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as Locale)}
+              className="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-sm text-slate-300 hover:text-white transition-colors cursor-pointer focus:outline-none focus:border-blue-500"
+            >
               {locales.map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setLocale(l)}
-                  className={`px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                    locale === l
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
+                <option key={l} value={l}>
                   {localeNames[l]}
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
             <a
               href="https://github.com/pyxl-dev/localpdf"
               target="_blank"
