@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from '../i18n/useTranslation'
 
 interface ToolLayoutProps {
   title: string
@@ -8,6 +9,8 @@ interface ToolLayoutProps {
 }
 
 export default function ToolLayout({ title, description, children }: ToolLayoutProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="max-w-4xl mx-auto">
       <Link
@@ -21,7 +24,7 @@ export default function ToolLayout({ title, description, children }: ToolLayoutP
             clipRule="evenodd"
           />
         </svg>
-        All tools
+        {t('common.allTools')}
       </Link>
       <h1 className="text-3xl font-bold text-white mb-2">{title}</h1>
       <p className="text-slate-400 mb-8">{description}</p>

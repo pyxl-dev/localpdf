@@ -3,8 +3,10 @@ import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { imagesToPDF } from '../lib/pdf-operations'
 import { downloadBlob } from '../lib/download'
+import { useTranslation } from '../i18n/useTranslation'
 
 export default function ImagesToPDF() {
+  const { t } = useTranslation()
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [processing, setProcessing] = useState(false)
@@ -27,13 +29,8 @@ export default function ImagesToPDF() {
     setFiles((prev) => prev.filter((_, i) => i !== index))
   }, [])
 
-  const handleDragStart = useCallback((idx: number) => {
-    setDragIdx(idx)
-  }, [])
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-  }, [])
+  const handleDragStart = useCallback((idx: number) => { setDragIdx(idx) }, [])
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault() }, [])
 
   const handleDrop = useCallback(
     (targetIdx: number) => {
@@ -61,30 +58,24 @@ export default function ImagesToPDF() {
     setError(null)
     try {
       const images = await Promise.all(
-        files.map(async (f) => ({
-          data: await f.arrayBuffer(),
-          type: f.type,
-        })),
+        files.map(async (f) => ({ data: await f.arrayBuffer(), type: f.type })),
       )
       const result = await imagesToPDF(images)
       downloadBlob(result, 'images.pdf')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create PDF')
+      setError(e instanceof Error ? e.message : t('images.error'))
     }
     setProcessing(false)
   }
 
   return (
-    <ToolLayout
-      title="Images to PDF"
-      description="Convert JPG, PNG images into a multi-page PDF document."
-    >
+    <ToolLayout title={t('images.title')} description={t('images.description')}>
       <FileDropzone
         accept="image/jpeg,image/png,image/jpg,.jpg,.jpeg,.png"
         multiple
         onFiles={handleFiles}
-        label="Drop your images here"
-        hint="JPG, PNG — drag to reorder after adding"
+        label={t('images.drop')}
+        hint={t('images.hint')}
       />
 
       {files.length > 0 && (
@@ -100,11 +91,7 @@ export default function ImagesToPDF() {
                 dragIdx === i ? 'opacity-40' : ''
               }`}
             >
-              <img
-                src={preview}
-                alt={files[i].name}
-                className="w-full h-full object-cover pointer-events-none"
-              />
+              <img src={preview} alt={files[i].name} className="w-full h-full object-cover pointer-events-none" />
               <button
                 onClick={() => handleRemove(i)}
                 className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-500 transition-colors"
@@ -125,7 +112,9 @@ export default function ImagesToPDF() {
           disabled={files.length === 0 || processing}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
         >
-          {processing ? 'Converting...' : `Create PDF (${files.length} image${files.length !== 1 ? 's' : ''})`}
+          {processing
+            ? t('images.creating')
+            : t('images.button', { count: files.length, s: files.length !== 1 ? 's' : '' })}
         </button>
         {files.length > 0 && (
           <button
@@ -136,7 +125,7 @@ export default function ImagesToPDF() {
             }}
             className="px-4 py-3 text-slate-400 hover:text-white transition-colors text-sm"
           >
-            Clear all
+            {t('images.clear')}
           </button>
         )}
       </div>

@@ -3,8 +3,10 @@ import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { mergePDFs } from '../lib/pdf-operations'
 import { downloadBlob } from '../lib/download'
+import { useTranslation } from '../i18n/useTranslation'
 
 export default function MergePDF() {
+  const { t } = useTranslation()
   const [files, setFiles] = useState<File[]>([])
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +55,7 @@ export default function MergePDF() {
       const merged = await mergePDFs(buffers)
       downloadBlob(merged, 'merged.pdf')
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to merge PDFs')
+      setError(e instanceof Error ? e.message : t('merge.error'))
     }
     setProcessing(false)
   }
@@ -65,16 +67,13 @@ export default function MergePDF() {
   }
 
   return (
-    <ToolLayout
-      title="Merge PDF"
-      description="Combine multiple PDF files into a single document. Drag to reorder."
-    >
+    <ToolLayout title={t('merge.title')} description={t('merge.description')}>
       <FileDropzone
         accept=".pdf"
         multiple
         onFiles={handleFiles}
-        label="Drop your PDF files here"
-        hint="or click to browse — you can add multiple files"
+        label={t('merge.drop')}
+        hint={t('merge.hint')}
       />
 
       {files.length > 0 && (
@@ -110,7 +109,9 @@ export default function MergePDF() {
           disabled={files.length < 2 || processing}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
         >
-          {processing ? 'Merging...' : `Merge ${files.length} file${files.length !== 1 ? 's' : ''}`}
+          {processing
+            ? t('merge.merging')
+            : t('merge.button', { count: files.length, s: files.length !== 1 ? 's' : '' })}
         </button>
 
         {files.length > 0 && (
@@ -118,7 +119,7 @@ export default function MergePDF() {
             onClick={() => setFiles([])}
             className="px-4 py-3 text-slate-400 hover:text-white transition-colors text-sm"
           >
-            Clear all
+            {t('merge.clear')}
           </button>
         )}
       </div>

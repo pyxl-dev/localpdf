@@ -4,8 +4,10 @@ import FileDropzone from '../components/FileDropzone'
 import { usePdfPages } from '../hooks/usePdfPages'
 import { extractPages } from '../lib/pdf-operations'
 import { downloadBlob } from '../lib/download'
+import { useTranslation } from '../i18n/useTranslation'
 
 export default function SplitPDF() {
+  const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [processing, setProcessing] = useState(false)
@@ -49,46 +51,43 @@ export default function SplitPDF() {
       const result = await extractPages(buffer, indices)
       downloadBlob(result, `split-${file.name}`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to split PDF')
+      setError(e instanceof Error ? e.message : t('split.error'))
     }
     setProcessing(false)
   }
 
   return (
-    <ToolLayout
-      title="Split PDF"
-      description="Select which pages to extract into a new PDF file."
-    >
+    <ToolLayout title={t('split.title')} description={t('split.description')}>
       {!file ? (
-        <FileDropzone accept=".pdf" onFiles={handleFiles} label="Drop a PDF file here" />
+        <FileDropzone accept=".pdf" onFiles={handleFiles} label={t('common.drop')} />
       ) : (
         <>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <span className="text-slate-300 text-sm font-medium">{file.name}</span>
-              <span className="text-slate-500 text-xs">{thumbnails.length} pages</span>
+              <span className="text-slate-500 text-xs">{t('common.pages', { count: thumbnails.length })}</span>
             </div>
             <button
               onClick={() => { setFile(null); setSelected(new Set()); reset() }}
               className="text-slate-400 hover:text-white text-sm transition-colors"
             >
-              Change file
+              {t('common.changeFile')}
             </button>
           </div>
 
           {loading ? (
-            <div className="text-center py-16 text-slate-500">Loading pages...</div>
+            <div className="text-center py-16 text-slate-500">{t('common.loading')}</div>
           ) : (
             <>
               <div className="flex gap-2 mb-4">
                 <button onClick={selectAll} className="text-blue-400 hover:text-blue-300 text-xs transition-colors">
-                  Select all
+                  {t('split.selectAll')}
                 </button>
                 <span className="text-slate-600">·</span>
                 <button onClick={selectNone} className="text-blue-400 hover:text-blue-300 text-xs transition-colors">
-                  Select none
+                  {t('split.selectNone')}
                 </button>
-                <span className="text-slate-500 text-xs ml-auto">{selected.size} selected</span>
+                <span className="text-slate-500 text-xs ml-auto">{t('split.selected', { count: selected.size })}</span>
               </div>
 
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
@@ -125,7 +124,9 @@ export default function SplitPDF() {
               disabled={selected.size === 0 || processing}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
             >
-              {processing ? 'Extracting...' : `Extract ${selected.size} page${selected.size !== 1 ? 's' : ''}`}
+              {processing
+                ? t('split.extracting')
+                : t('split.button', { count: selected.size, s: selected.size !== 1 ? 's' : '' })}
             </button>
           </div>
 

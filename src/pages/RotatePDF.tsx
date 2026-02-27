@@ -4,8 +4,10 @@ import FileDropzone from '../components/FileDropzone'
 import { usePdfPages } from '../hooks/usePdfPages'
 import { rotatePages } from '../lib/pdf-operations'
 import { downloadBlob } from '../lib/download'
+import { useTranslation } from '../i18n/useTranslation'
 
 export default function RotatePDF() {
+  const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [rotations, setRotations] = useState<Record<number, number>>({})
   const [processing, setProcessing] = useState(false)
@@ -44,9 +46,7 @@ export default function RotatePDF() {
 
   const handleSave = async () => {
     if (!file) return
-    const toApply = Object.fromEntries(
-      Object.entries(rotations).filter(([, v]) => v !== 0),
-    )
+    const toApply = Object.fromEntries(Object.entries(rotations).filter(([, v]) => v !== 0))
     if (Object.keys(toApply).length === 0) return
     setProcessing(true)
     setError(null)
@@ -55,7 +55,7 @@ export default function RotatePDF() {
       const result = await rotatePages(buffer, toApply)
       downloadBlob(result, `rotated-${file.name}`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to rotate pages')
+      setError(e instanceof Error ? e.message : t('rotate.error'))
     }
     setProcessing(false)
   }
@@ -63,52 +63,40 @@ export default function RotatePDF() {
   const hasChanges = Object.values(rotations).some((v) => v !== 0)
 
   return (
-    <ToolLayout
-      title="Rotate Pages"
-      description="Click to rotate individual pages, or rotate all pages at once."
-    >
+    <ToolLayout title={t('rotate.title')} description={t('rotate.description')}>
       {!file ? (
-        <FileDropzone accept=".pdf" onFiles={handleFiles} label="Drop a PDF file here" />
+        <FileDropzone accept=".pdf" onFiles={handleFiles} label={t('common.drop')} />
       ) : (
         <>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <span className="text-slate-300 text-sm font-medium">{file.name}</span>
-              <span className="text-slate-500 text-xs">{thumbnails.length} pages</span>
+              <span className="text-slate-500 text-xs">{t('common.pages', { count: thumbnails.length })}</span>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => rotateAll(90)}
-                className="text-blue-400 hover:text-blue-300 text-xs transition-colors"
-              >
-                Rotate all →
+              <button onClick={() => rotateAll(90)} className="text-blue-400 hover:text-blue-300 text-xs transition-colors">
+                {t('rotate.all.cw')}
               </button>
               <span className="text-slate-600">·</span>
-              <button
-                onClick={() => rotateAll(-90)}
-                className="text-blue-400 hover:text-blue-300 text-xs transition-colors"
-              >
-                ← Rotate all
+              <button onClick={() => rotateAll(-90)} className="text-blue-400 hover:text-blue-300 text-xs transition-colors">
+                {t('rotate.all.ccw')}
               </button>
               <span className="text-slate-600">·</span>
               <button
                 onClick={() => { setFile(null); setRotations({}); reset() }}
                 className="text-slate-400 hover:text-white text-xs transition-colors"
               >
-                Change file
+                {t('common.changeFile')}
               </button>
             </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-16 text-slate-500">Loading pages...</div>
+            <div className="text-center py-16 text-slate-500">{t('common.loading')}</div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {thumbnails.map((thumb, i) => (
-                <div
-                  key={i}
-                  className="relative rounded-lg overflow-hidden border-2 border-slate-700 hover:border-slate-500 transition-all"
-                >
+                <div key={i} className="relative rounded-lg overflow-hidden border-2 border-slate-700 hover:border-slate-500 transition-all">
                   <img
                     src={thumb}
                     alt={`Page ${i + 1}`}
@@ -119,20 +107,8 @@ export default function RotatePDF() {
                     <div className="flex items-center justify-between">
                       <span className="text-white text-xs font-medium">{i + 1}</span>
                       <div className="flex gap-1">
-                        <button
-                          onClick={() => rotate(i, -90)}
-                          className="text-slate-300 hover:text-white text-xs px-1 transition-colors"
-                          title="Rotate left"
-                        >
-                          ↺
-                        </button>
-                        <button
-                          onClick={() => rotate(i, 90)}
-                          className="text-slate-300 hover:text-white text-xs px-1 transition-colors"
-                          title="Rotate right"
-                        >
-                          ↻
-                        </button>
+                        <button onClick={() => rotate(i, -90)} className="text-slate-300 hover:text-white text-xs px-1 transition-colors" title="Rotate left">↺</button>
+                        <button onClick={() => rotate(i, 90)} className="text-slate-300 hover:text-white text-xs px-1 transition-colors" title="Rotate right">↻</button>
                       </div>
                     </div>
                   </div>
@@ -152,7 +128,7 @@ export default function RotatePDF() {
               disabled={!hasChanges || processing}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
             >
-              {processing ? 'Processing...' : 'Download rotated PDF'}
+              {processing ? t('rotate.processing') : t('rotate.button')}
             </button>
           </div>
 

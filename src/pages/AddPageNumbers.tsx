@@ -4,19 +4,22 @@ import FileDropzone from '../components/FileDropzone'
 import { addPageNumbers } from '../lib/pdf-operations'
 import type { PageNumberOptions } from '../lib/pdf-operations'
 import { downloadBlob } from '../lib/download'
+import { useTranslation } from '../i18n/useTranslation'
+import type { TranslationKey } from '../i18n/translations'
 
 type Position = PageNumberOptions['position']
 
-const positions: { value: Position; label: string }[] = [
-  { value: 'bottom-center', label: 'Bottom center' },
-  { value: 'bottom-left', label: 'Bottom left' },
-  { value: 'bottom-right', label: 'Bottom right' },
-  { value: 'top-center', label: 'Top center' },
-  { value: 'top-left', label: 'Top left' },
-  { value: 'top-right', label: 'Top right' },
+const positionKeys: { value: Position; labelKey: TranslationKey }[] = [
+  { value: 'bottom-center', labelKey: 'pagenumbers.pos.bottomCenter' },
+  { value: 'bottom-left', labelKey: 'pagenumbers.pos.bottomLeft' },
+  { value: 'bottom-right', labelKey: 'pagenumbers.pos.bottomRight' },
+  { value: 'top-center', labelKey: 'pagenumbers.pos.topCenter' },
+  { value: 'top-left', labelKey: 'pagenumbers.pos.topLeft' },
+  { value: 'top-right', labelKey: 'pagenumbers.pos.topRight' },
 ]
 
 export default function AddPageNumbers() {
+  const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [position, setPosition] = useState<Position>('bottom-center')
   const [fontSize, setFontSize] = useState(12)
@@ -41,18 +44,15 @@ export default function AddPageNumbers() {
       const result = await addPageNumbers(buffer, { position, fontSize, startFrom })
       downloadBlob(result, `numbered-${file.name}`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to add page numbers')
+      setError(e instanceof Error ? e.message : t('pagenumbers.error'))
     }
     setProcessing(false)
   }
 
   return (
-    <ToolLayout
-      title="Add Page Numbers"
-      description="Add page numbers to every page of your PDF document."
-    >
+    <ToolLayout title={t('pagenumbers.title')} description={t('pagenumbers.description')}>
       {!file ? (
-        <FileDropzone accept=".pdf" onFiles={handleFiles} label="Drop a PDF file here" />
+        <FileDropzone accept=".pdf" onFiles={handleFiles} label={t('common.drop')} />
       ) : (
         <>
           <div className="flex items-center justify-between mb-6">
@@ -61,27 +61,27 @@ export default function AddPageNumbers() {
               onClick={() => setFile(null)}
               className="text-slate-400 hover:text-white text-sm transition-colors"
             >
-              Change file
+              {t('common.changeFile')}
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Position</label>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">{t('pagenumbers.position')}</label>
               <select
                 value={position}
                 onChange={(e) => setPosition(e.target.value as Position)}
                 className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:border-blue-500 focus:outline-none transition-colors"
               >
-                {positions.map((p) => (
+                {positionKeys.map((p) => (
                   <option key={p.value} value={p.value}>
-                    {p.label}
+                    {t(p.labelKey)}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Font size</label>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">{t('pagenumbers.fontSize')}</label>
               <input
                 type="number"
                 value={fontSize}
@@ -92,7 +92,7 @@ export default function AddPageNumbers() {
               />
             </div>
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Start from</label>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">{t('pagenumbers.startFrom')}</label>
               <input
                 type="number"
                 value={startFrom}
@@ -109,7 +109,7 @@ export default function AddPageNumbers() {
               disabled={processing}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
             >
-              {processing ? 'Adding numbers...' : 'Add numbers & download'}
+              {processing ? t('pagenumbers.processing') : t('pagenumbers.button')}
             </button>
           </div>
 

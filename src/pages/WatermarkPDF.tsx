@@ -3,10 +3,12 @@ import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { addWatermark } from '../lib/pdf-operations'
 import { downloadBlob } from '../lib/download'
+import { useTranslation } from '../i18n/useTranslation'
 
 export default function WatermarkPDF() {
+  const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
-  const [text, setText] = useState('CONFIDENTIAL')
+  const [text, setText] = useState('')
   const [fontSize, setFontSize] = useState(60)
   const [opacity, setOpacity] = useState(15)
   const [rotation, setRotation] = useState(45)
@@ -35,18 +37,15 @@ export default function WatermarkPDF() {
       })
       downloadBlob(result, `watermarked-${file.name}`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to add watermark')
+      setError(e instanceof Error ? e.message : t('watermark.error'))
     }
     setProcessing(false)
   }
 
   return (
-    <ToolLayout
-      title="Add Watermark"
-      description="Add a text watermark overlay on every page of your PDF."
-    >
+    <ToolLayout title={t('watermark.title')} description={t('watermark.description')}>
       {!file ? (
-        <FileDropzone accept=".pdf" onFiles={handleFiles} label="Drop a PDF file here" />
+        <FileDropzone accept=".pdf" onFiles={handleFiles} label={t('common.drop')} />
       ) : (
         <>
           <div className="flex items-center justify-between mb-6">
@@ -55,20 +54,20 @@ export default function WatermarkPDF() {
               onClick={() => setFile(null)}
               className="text-slate-400 hover:text-white text-sm transition-colors"
             >
-              Change file
+              {t('common.changeFile')}
             </button>
           </div>
 
           <div className="space-y-4 max-w-lg">
             <div>
               <label className="block text-slate-300 text-sm font-medium mb-1.5">
-                Watermark text
+                {t('watermark.text')}
               </label>
               <input
                 type="text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="e.g. CONFIDENTIAL, DRAFT"
+                placeholder={t('watermark.textPh')}
                 className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
               />
             </div>
@@ -76,7 +75,7 @@ export default function WatermarkPDF() {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-1.5">
-                  Font size
+                  {t('watermark.fontSize')}
                 </label>
                 <input
                   type="number"
@@ -89,7 +88,7 @@ export default function WatermarkPDF() {
               </div>
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-1.5">
-                  Opacity (%)
+                  {t('watermark.opacity')} (%)
                 </label>
                 <input
                   type="number"
@@ -102,7 +101,7 @@ export default function WatermarkPDF() {
               </div>
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-1.5">
-                  Rotation (°)
+                  {t('watermark.rotation')} (°)
                 </label>
                 <input
                   type="number"
@@ -124,7 +123,7 @@ export default function WatermarkPDF() {
                   transform: `rotate(${rotation}deg)`,
                 }}
               >
-                {text || 'Preview'}
+                {text || t('watermark.preview')}
               </span>
             </div>
           </div>
@@ -135,7 +134,7 @@ export default function WatermarkPDF() {
               disabled={!text.trim() || processing}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
             >
-              {processing ? 'Adding watermark...' : 'Add watermark & download'}
+              {processing ? t('watermark.processing') : t('watermark.button')}
             </button>
           </div>
 

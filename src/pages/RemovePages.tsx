@@ -4,8 +4,10 @@ import FileDropzone from '../components/FileDropzone'
 import { usePdfPages } from '../hooks/usePdfPages'
 import { removePages } from '../lib/pdf-operations'
 import { downloadBlob } from '../lib/download'
+import { useTranslation } from '../i18n/useTranslation'
 
 export default function RemovePages() {
+  const { t } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
   const [toRemove, setToRemove] = useState<Set<number>>(new Set())
   const [processing, setProcessing] = useState(false)
@@ -34,7 +36,7 @@ export default function RemovePages() {
   const handleRemove = async () => {
     if (!file || toRemove.size === 0) return
     if (toRemove.size >= thumbnails.length) {
-      setError('Cannot remove all pages')
+      setError(t('remove.allError'))
       return
     }
     setProcessing(true)
@@ -45,41 +47,35 @@ export default function RemovePages() {
       const result = await removePages(buffer, indices)
       downloadBlob(result, `trimmed-${file.name}`)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to remove pages')
+      setError(e instanceof Error ? e.message : t('remove.error'))
     }
     setProcessing(false)
   }
 
   return (
-    <ToolLayout
-      title="Remove Pages"
-      description="Select pages to delete from your PDF file."
-    >
+    <ToolLayout title={t('remove.title')} description={t('remove.description')}>
       {!file ? (
-        <FileDropzone accept=".pdf" onFiles={handleFiles} label="Drop a PDF file here" />
+        <FileDropzone accept=".pdf" onFiles={handleFiles} label={t('common.drop')} />
       ) : (
         <>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <span className="text-slate-300 text-sm font-medium">{file.name}</span>
-              <span className="text-slate-500 text-xs">{thumbnails.length} pages</span>
+              <span className="text-slate-500 text-xs">{t('common.pages', { count: thumbnails.length })}</span>
             </div>
             <button
               onClick={() => { setFile(null); setToRemove(new Set()); reset() }}
               className="text-slate-400 hover:text-white text-sm transition-colors"
             >
-              Change file
+              {t('common.changeFile')}
             </button>
           </div>
 
           {loading ? (
-            <div className="text-center py-16 text-slate-500">Loading pages...</div>
+            <div className="text-center py-16 text-slate-500">{t('common.loading')}</div>
           ) : (
             <>
-              <p className="text-slate-500 text-sm mb-4">
-                Click pages to mark them for removal. Marked pages shown with red overlay.
-              </p>
-
+              <p className="text-slate-500 text-sm mb-4">{t('remove.hint')}</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                 {thumbnails.map((thumb, i) => (
                   <button
@@ -115,12 +111,12 @@ export default function RemovePages() {
               className="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
             >
               {processing
-                ? 'Removing...'
-                : `Remove ${toRemove.size} page${toRemove.size !== 1 ? 's' : ''}`}
+                ? t('remove.removing')
+                : t('remove.button', { count: toRemove.size, s: toRemove.size !== 1 ? 's' : '' })}
             </button>
             {toRemove.size > 0 && (
               <span className="text-slate-500 text-sm">
-                {thumbnails.length - toRemove.size} pages will remain
+                {t('remove.remaining', { count: thumbnails.length - toRemove.size })}
               </span>
             )}
           </div>
