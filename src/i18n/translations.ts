@@ -63,6 +63,10 @@ const en = {
   'reorder.button': 'Save new order',
   'reorder.processing': 'Processing...',
   'reorder.reset': 'Reset order',
+  'reorder.moveStart': 'Move to start',
+  'reorder.moveBefore': 'Move left',
+  'reorder.moveAfter': 'Move right',
+  'reorder.moveEnd': 'Move to end',
   'reorder.error': 'Failed to reorder pages',
 
   // Rotate page
@@ -207,6 +211,10 @@ const fr: Record<TranslationKey, string> = {
   'reorder.button': 'Enregistrer le nouvel ordre',
   'reorder.processing': 'Traitement...',
   'reorder.reset': 'Réinitialiser',
+  'reorder.moveStart': 'Déplacer au début',
+  'reorder.moveBefore': 'Déplacer à gauche',
+  'reorder.moveAfter': 'Déplacer à droite',
+  'reorder.moveEnd': 'Déplacer à la fin',
   'reorder.error': 'Échec de la réorganisation',
 
   'rotate.title': 'Pivoter les pages',
@@ -342,6 +350,10 @@ const es: Record<TranslationKey, string> = {
   'reorder.button': 'Guardar nuevo orden',
   'reorder.processing': 'Procesando...',
   'reorder.reset': 'Restablecer',
+  'reorder.moveStart': 'Mover al inicio',
+  'reorder.moveBefore': 'Mover a la izquierda',
+  'reorder.moveAfter': 'Mover a la derecha',
+  'reorder.moveEnd': 'Mover al final',
   'reorder.error': 'Error al reordenar',
 
   'rotate.title': 'Rotar páginas',
