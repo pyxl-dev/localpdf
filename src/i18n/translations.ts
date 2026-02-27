@@ -23,7 +23,7 @@ const en = {
   'tool.split.title': 'Split PDF',
   'tool.split.desc': 'Extract specific pages into a new PDF file.',
   'tool.reorder.title': 'Reorder Pages',
-  'tool.reorder.desc': 'Drag and drop pages to rearrange them.',
+  'tool.reorder.desc': 'Select pages and move them to rearrange your PDF.',
   'tool.rotate.title': 'Rotate Pages',
   'tool.rotate.desc': 'Rotate individual pages or all pages at once.',
   'tool.remove.title': 'Remove Pages',
@@ -59,7 +59,7 @@ const en = {
 
   // Reorder page
   'reorder.title': 'Reorder Pages',
-  'reorder.description': 'Drag and drop pages to rearrange them in a new order.',
+  'reorder.description': 'Tap a page to select it, then use the arrows or type a position to move it.',
   'reorder.button': 'Save new order',
   'reorder.processing': 'Processing...',
   'reorder.reset': 'Reset order',
@@ -174,7 +174,7 @@ const fr: Record<TranslationKey, string> = {
   'tool.split.title': 'Diviser',
   'tool.split.desc': 'Extraire des pages spécifiques dans un nouveau PDF.',
   'tool.reorder.title': 'Réordonner',
-  'tool.reorder.desc': 'Glisser-déposer pour réorganiser les pages.',
+  'tool.reorder.desc': 'Sélectionnez et déplacez les pages de votre PDF.',
   'tool.rotate.title': 'Pivoter',
   'tool.rotate.desc': 'Pivoter des pages individuelles ou toutes à la fois.',
   'tool.remove.title': 'Supprimer',
@@ -207,7 +207,7 @@ const fr: Record<TranslationKey, string> = {
   'split.error': 'Échec de la division du PDF',
 
   'reorder.title': 'Réordonner les pages',
-  'reorder.description': 'Glissez-déposez les pages pour les réorganiser.',
+  'reorder.description': 'Touchez une page pour la sélectionner, puis utilisez les flèches ou saisissez une position.',
   'reorder.button': 'Enregistrer le nouvel ordre',
   'reorder.processing': 'Traitement...',
   'reorder.reset': 'Réinitialiser',
@@ -313,7 +313,7 @@ const es: Record<TranslationKey, string> = {
   'tool.split.title': 'Dividir',
   'tool.split.desc': 'Extraer páginas específicas en un nuevo PDF.',
   'tool.reorder.title': 'Reordenar',
-  'tool.reorder.desc': 'Arrastrar y soltar para reorganizar las páginas.',
+  'tool.reorder.desc': 'Selecciona y mueve las páginas de tu PDF.',
   'tool.rotate.title': 'Rotar',
   'tool.rotate.desc': 'Rotar páginas individuales o todas a la vez.',
   'tool.remove.title': 'Eliminar',
@@ -346,7 +346,7 @@ const es: Record<TranslationKey, string> = {
   'split.error': 'Error al dividir el PDF',
 
   'reorder.title': 'Reordenar páginas',
-  'reorder.description': 'Arrastra y suelta las páginas para reorganizarlas.',
+  'reorder.description': 'Toca una página para seleccionarla, luego usa las flechas o escribe una posición.',
   'reorder.button': 'Guardar nuevo orden',
   'reorder.processing': 'Procesando...',
   'reorder.reset': 'Restablecer',
