@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { usePdfPages } from '../hooks/usePdfPages'
@@ -17,6 +17,11 @@ export default function ReorderPDF() {
   const [error, setError] = useState<string | null>(null)
   const { thumbnails, loading, loadFile, reset } = usePdfPages()
   const gridRef = useRef<HTMLDivElement>(null)
+  const [posInput, setPosInput] = useState('')
+
+  useEffect(() => {
+    setPosInput(selectedIdx !== null ? String(selectedIdx + 1) : '')
+  }, [selectedIdx])
 
   const handleFiles = useCallback((files: File[]) => {
     const pdf = files.find((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
@@ -123,18 +128,24 @@ export default function ReorderPDF() {
                   Page #{order[selectedIdx] + 1} →
                 </span>
                 <input
-                  type="number"
-                  min={1}
-                  max={order.length}
-                  value={selectedIdx + 1}
-                  onChange={(e) => {
-                    const target = Math.max(0, Math.min(order.length - 1, parseInt(e.target.value, 10) - 1))
-                    if (!isNaN(target)) {
+                  type="text"
+                  inputMode="numeric"
+                  value={posInput}
+                  onChange={(e) => setPosInput(e.target.value.replace(/[^0-9]/g, ''))}
+                  onBlur={() => {
+                    const n = parseInt(posInput, 10)
+                    if (!isNaN(n) && n >= 1 && n <= order.length && selectedIdx !== null) {
+                      const target = n - 1
                       moveItem(selectedIdx, target)
                       setSelectedIdx(target)
+                    } else {
+                      setPosInput(selectedIdx !== null ? String(selectedIdx + 1) : '')
                     }
                   }}
-                  className="w-14 bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-center text-sm text-white focus:outline-none focus:border-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                  }}
+                  className="w-14 bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-center text-sm text-white focus:outline-none focus:border-blue-500"
                 />
                 <span className="text-slate-500 text-sm">/ {order.length}</span>
               </div>
