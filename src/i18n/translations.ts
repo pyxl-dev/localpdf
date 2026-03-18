@@ -56,6 +56,8 @@ const en = {
   'fillforms.saving': 'Saving...',
   'fillforms.error': 'Failed to process PDF',
   'fillforms.signature': 'Signature fields cannot be filled',
+  'fillforms.signatureHint': 'Draw your signature',
+  'fillforms.signatureClear': 'Clear signature',
   'fillforms.prev': 'Previous',
   'fillforms.next': 'Next',
 
@@ -253,6 +255,8 @@ const fr: Record<TranslationKey, string> = {
   'fillforms.saving': 'Enregistrement...',
   'fillforms.error': 'Erreur lors du traitement',
   'fillforms.signature': 'Les champs de signature ne peuvent pas être remplis',
+  'fillforms.signatureHint': 'Dessinez votre signature',
+  'fillforms.signatureClear': 'Effacer la signature',
   'fillforms.prev': 'Précédent',
   'fillforms.next': 'Suivant',
 
@@ -436,6 +440,8 @@ const es: Record<TranslationKey, string> = {
   'fillforms.saving': 'Guardando...',
   'fillforms.error': 'Error al procesar el PDF',
   'fillforms.signature': 'Los campos de firma no se pueden rellenar',
+  'fillforms.signatureHint': 'Dibuja tu firma',
+  'fillforms.signatureClear': 'Borrar firma',
   'fillforms.prev': 'Anterior',
   'fillforms.next': 'Siguiente',
 
@@ -619,6 +625,8 @@ const it: Record<TranslationKey, string> = {
   'fillforms.saving': 'Salvataggio...',
   'fillforms.error': 'Errore durante l\'elaborazione',
   'fillforms.signature': 'I campi firma non possono essere compilati',
+  'fillforms.signatureHint': 'Disegna la tua firma',
+  'fillforms.signatureClear': 'Cancella firma',
   'fillforms.prev': 'Precedente',
   'fillforms.next': 'Successivo',
 

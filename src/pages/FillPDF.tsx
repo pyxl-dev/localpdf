@@ -24,6 +24,118 @@ function pdfRectToCSS(
   }
 }
 
+function SignaturePad({
+  style,
+  value,
+  onChange,
+  t,
+}: {
+  style: React.CSSProperties
+  value: FormFieldValue
+  onChange: (val: FormFieldValue) => void
+  t: (key: string) => string
+}) {
+  const padRef = useRef<HTMLCanvasElement>(null)
+  const isDrawing = useRef(false)
+  const hasSig = !!value.signatureDataUrl
+
+  const getPos = (e: React.PointerEvent) => {
+    const rect = padRef.current!.getBoundingClientRect()
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const canvas = padRef.current
+    if (!canvas) return
+    canvas.setPointerCapture(e.pointerId)
+    isDrawing.current = true
+    const ctx = canvas.getContext('2d')!
+    const pos = getPos(e)
+    ctx.beginPath()
+    ctx.moveTo(pos.x, pos.y)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDrawing.current || !padRef.current) return
+    const ctx = padRef.current.getContext('2d')!
+    const pos = getPos(e)
+    ctx.lineWidth = 2
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = '#1e293b'
+    ctx.lineTo(pos.x, pos.y)
+    ctx.stroke()
+  }
+
+  const handlePointerUp = () => {
+    if (!isDrawing.current || !padRef.current) return
+    isDrawing.current = false
+    const dataUrl = padRef.current.toDataURL('image/png')
+    onChange({ ...value, signatureDataUrl: dataUrl })
+  }
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const canvas = padRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')!
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    onChange({ ...value, signatureDataUrl: undefined })
+  }
+
+  // Size canvas to match container
+  useEffect(() => {
+    const canvas = padRef.current
+    if (!canvas) return
+    const w = parseInt(String(style.width)) || 200
+    const h = parseInt(String(style.height)) || 40
+    canvas.width = w
+    canvas.height = h
+
+    // Redraw existing signature if present
+    if (value.signatureDataUrl) {
+      const img = new Image()
+      img.onload = () => {
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+      }
+      img.src = value.signatureDataUrl
+    }
+  }, [style.width, style.height])
+
+  return (
+    <div
+      style={style}
+      className="border-2 border-dashed border-purple-400/60 hover:border-purple-400 bg-white/80 rounded-sm relative group"
+      title={t('fillforms.signatureHint')}
+    >
+      <canvas
+        ref={padRef}
+        className="w-full h-full cursor-crosshair touch-none"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      />
+      {hasSig && (
+        <button
+          onClick={handleClear}
+          className="absolute top-0.5 right-0.5 p-0.5 bg-red-500/80 hover:bg-red-500 text-white rounded-sm opacity-0 group-hover:opacity-100 transition-opacity"
+          title={t('fillforms.signatureClear')}
+        >
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+      {!hasSig && (
+        <span className="absolute inset-0 flex items-center justify-center text-purple-400/60 text-xs pointer-events-none select-none">
+          {t('fillforms.signatureHint')}
+        </span>
+      )}
+    </div>
+  )
+}
+
 function FormFieldInput({
   field,
   value,
@@ -45,17 +157,14 @@ function FormFieldInput({
   const baseClasses =
     'border border-dashed border-blue-400/50 hover:border-blue-400 focus-within:border-blue-500 focus-within:border-solid focus-within:bg-white/90 transition-all bg-blue-50/20 rounded-sm'
 
-  if (field.readOnly && field.type === 'signature') {
+  if (field.type === 'signature') {
     return (
-      <div
+      <SignaturePad
         style={style}
-        className="border border-dashed border-slate-500/50 bg-slate-800/30 rounded-sm flex items-center justify-center cursor-not-allowed"
-        title={t('fillforms.signature')}
-      >
-        <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-        </svg>
-      </div>
+        value={value}
+        onChange={onChange}
+        t={t}
+      />
     )
   }
 
@@ -181,6 +290,8 @@ export default function FillPDF() {
             textValue: field.value,
             checked: field.isChecked,
             selected: field.selected,
+            pageIndex: field.pageIndex,
+            rect: field.rect,
           }
         }
       }
@@ -263,7 +374,7 @@ export default function FillPDF() {
     }
   }
 
-  const fillableCount = fields.filter((f) => !f.readOnly && f.type !== 'signature' && f.type !== 'button').length
+  const fillableCount = fields.filter((f) => !f.readOnly && f.type !== 'button').length
 
   // No file loaded
   if (!file) {
@@ -424,6 +535,8 @@ export default function FillPDF() {
                   textValue: field.value,
                   checked: field.isChecked,
                   selected: field.selected,
+                  pageIndex: field.pageIndex,
+                  rect: field.rect,
                 }}
                 pageHeight={pageHeight}
                 scale={zoom}

@@ -26,6 +26,9 @@ export interface FormFieldValue {
   textValue?: string
   checked?: boolean
   selected?: string[]
+  signatureDataUrl?: string
+  pageIndex?: number
+  rect?: { x: number; y: number; width: number; height: number }
 }
 
 function detectFieldType(field: PDFField): FormFieldType {
@@ -110,7 +113,7 @@ export async function extractFormFields(file: ArrayBuffer): Promise<FormFieldInf
         value = field.getSelected() ?? ''
         selected = value ? [value] : []
       } else if (type === 'signature') {
-        readOnly = true
+        readOnly = false
       }
 
       result.push({
@@ -154,6 +157,29 @@ export async function fillFormFields(
     } catch {
       // Skip fields that can't be set (e.g. signature, removed fields)
     }
+  }
+
+  // Draw signature images directly on the pages
+  const signatureValues = values.filter((v) => v.type === 'signature' && v.signatureDataUrl && v.rect)
+  for (const sig of signatureValues) {
+    const dataUrl = sig.signatureDataUrl!
+    const rect = sig.rect!
+    const pageIdx = sig.pageIndex ?? 0
+    const page = pdfDoc.getPages()[pageIdx]
+    if (!page) continue
+
+    const base64 = dataUrl.split(',')[1]
+    const pngBytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+    const img = await pdfDoc.embedPng(pngBytes)
+
+    // Draw the signature image within the field rect, with some padding
+    const padding = 2
+    page.drawImage(img, {
+      x: rect.x + padding,
+      y: rect.y + padding,
+      width: rect.width - padding * 2,
+      height: rect.height - padding * 2,
+    })
   }
 
   if (flatten) {
