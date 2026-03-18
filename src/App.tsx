@@ -12,12 +12,14 @@ import AddPageNumbers from './pages/AddPageNumbers'
 import WatermarkPDF from './pages/WatermarkPDF'
 import MarkdownToPDF from './pages/MarkdownToPDF'
 import HtmlToPDF from './pages/HtmlToPDF'
+import FillPDF from './pages/FillPDF'
 
 export default function App() {
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/fill-forms" element={<FillPDF />} />
         <Route path="/merge" element={<MergePDF />} />
         <Route path="/split" element={<SplitPDF />} />
         <Route path="/reorder" element={<ReorderPDF />} />

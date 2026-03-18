@@ -5,6 +5,16 @@ import type { TranslationKey } from '../i18n/translations'
 
 const tools: { path: string; titleKey: TranslationKey; descKey: TranslationKey; icon: ReactNode }[] = [
   {
+    path: '/fill-forms',
+    titleKey: 'tool.fillforms.title',
+    descKey: 'tool.fillforms.desc',
+    icon: (
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} className="h-8 w-8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 011.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C8.003 4.025 7 5.022 7 6.236v.114a2.25 2.25 0 00.75 4.861h8.5a2.25 2.25 0 00.75-4.861V6.236c0-1.214-1.003-2.211-2.226-2.32a49.16 49.16 0 00-1.124-.08m-5.8 0c-.51.032-1.017.07-1.522.112A2.253 2.253 0 004.5 6.236v11.514A2.25 2.25 0 006.728 20h4.272m4.5-13.5h-4.5m4.5 3h-4.5m1.5 4.5l1.5 1.5 3-3" />
+      </svg>
+    ),
+  },
+  {
     path: '/merge',
     titleKey: 'tool.merge.title',
     descKey: 'tool.merge.desc',
