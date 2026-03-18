@@ -10,6 +10,46 @@ import { Link } from 'react-router-dom'
 
 const ZOOM_LEVELS = [0.5, 0.75, 1, 1.25, 1.5]
 
+function trimCanvas(canvas: HTMLCanvasElement): string | undefined {
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return undefined
+  const { width, height } = canvas
+  const imageData = ctx.getImageData(0, 0, width, height)
+  const { data } = imageData
+
+  let top = height, bottom = 0, left = width, right = 0
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4
+      const isWhite = data[i] === 255 && data[i + 1] === 255 && data[i + 2] === 255
+      if (!isWhite && data[i + 3] > 0) {
+        if (y < top) top = y
+        if (y > bottom) bottom = y
+        if (x < left) left = x
+        if (x > right) right = x
+      }
+    }
+  }
+
+  if (top > bottom) return undefined
+
+  const pad = 4
+  top = Math.max(0, top - pad)
+  left = Math.max(0, left - pad)
+  bottom = Math.min(height - 1, bottom + pad)
+  right = Math.min(width - 1, right + pad)
+
+  const trimmed = document.createElement('canvas')
+  trimmed.width = right - left + 1
+  trimmed.height = bottom - top + 1
+  trimmed.getContext('2d')!.drawImage(
+    canvas, left, top, trimmed.width, trimmed.height,
+    0, 0, trimmed.width, trimmed.height,
+  )
+  return trimmed.toDataURL('image/png')
+}
+
 function pdfRectToCSS(
   rect: FormFieldInfo['rect'],
   pageHeight: number,
@@ -40,8 +80,14 @@ function SignaturePad({
   const hasSig = !!value.signatureDataUrl
 
   const getPos = (e: React.PointerEvent) => {
-    const rect = padRef.current!.getBoundingClientRect()
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const canvas = padRef.current!
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    }
   }
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -70,8 +116,10 @@ function SignaturePad({
   const handlePointerUp = () => {
     if (!isDrawing.current || !padRef.current) return
     isDrawing.current = false
-    const dataUrl = padRef.current.toDataURL('image/png')
-    onChange({ ...value, signatureDataUrl: dataUrl })
+    const dataUrl = trimCanvas(padRef.current)
+    if (dataUrl) {
+      onChange({ ...value, signatureDataUrl: dataUrl })
+    }
   }
 
   const handleClear = (e: React.MouseEvent) => {
@@ -160,8 +208,14 @@ function SignatureModal({
   }, [])
 
   const getPos = (e: React.PointerEvent) => {
-    const rect = padRef.current!.getBoundingClientRect()
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const canvas = padRef.current!
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    }
   }
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -203,7 +257,8 @@ function SignatureModal({
 
   const handleConfirm = () => {
     if (!padRef.current || !hasStrokes.current) return
-    onConfirm(padRef.current.toDataURL('image/png'))
+    const dataUrl = trimCanvas(padRef.current)
+    if (dataUrl) onConfirm(dataUrl)
   }
 
   return (
@@ -243,6 +298,151 @@ function SignatureModal({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function DraggableSignature({
+  sig,
+  zoom,
+  pageHeight,
+  onMove,
+  onRemove,
+  onResize,
+  t,
+}: {
+  sig: FreeSignature
+  zoom: number
+  pageHeight: number
+  onMove: (id: string, newX: number, newY: number) => void
+  onRemove: (id: string) => void
+  onResize: (id: string, newWidth: number, newHeight: number) => void
+  t: (key: string) => string
+}) {
+  const isDragging = useRef(false)
+  const isResizing = useRef(false)
+  const startPos = useRef({ x: 0, y: 0 })
+  const startSigPos = useRef({ x: 0, y: 0 })
+  const startSize = useRef({ width: 0, height: 0 })
+  const divRef = useRef<HTMLDivElement>(null)
+
+  const aspectRatio = sig.width / sig.height
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('button')) return
+    if ((e.target as HTMLElement).dataset.resizeHandle) return
+    e.preventDefault()
+    e.stopPropagation()
+    isDragging.current = true
+    startPos.current = { x: e.clientX, y: e.clientY }
+    startSigPos.current = { x: sig.x, y: sig.y }
+    divRef.current?.setPointerCapture(e.pointerId)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current) return
+    e.preventDefault()
+    e.stopPropagation()
+    const deltaX = (e.clientX - startPos.current.x) / zoom
+    const deltaY = -(e.clientY - startPos.current.y) / zoom
+    const newX = startSigPos.current.x + deltaX
+    const newY = startSigPos.current.y + deltaY
+    const div = divRef.current
+    if (div) {
+      div.style.left = `${newX * zoom}px`
+      div.style.top = `${(pageHeight - newY - sig.height) * zoom}px`
+    }
+  }
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDragging.current) return
+    isDragging.current = false
+    divRef.current?.releasePointerCapture(e.pointerId)
+    const deltaX = (e.clientX - startPos.current.x) / zoom
+    const deltaY = -(e.clientY - startPos.current.y) / zoom
+    const newX = startSigPos.current.x + deltaX
+    const newY = startSigPos.current.y + deltaY
+    onMove(sig.id, newX, newY)
+  }
+
+  const handleResizePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    isResizing.current = true
+    startPos.current = { x: e.clientX, y: e.clientY }
+    startSize.current = { width: sig.width, height: sig.height }
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  }
+
+  const handleResizePointerMove = (e: React.PointerEvent) => {
+    if (!isResizing.current) return
+    e.preventDefault()
+    e.stopPropagation()
+    const deltaX = (e.clientX - startPos.current.x) / zoom
+    const newWidth = Math.max(40, startSize.current.width + deltaX)
+    const newHeight = Math.max(20, newWidth / aspectRatio)
+    const div = divRef.current
+    if (div) {
+      div.style.width = `${newWidth * zoom}px`
+      div.style.height = `${newHeight * zoom}px`
+      div.style.top = `${(pageHeight - sig.y - newHeight) * zoom}px`
+    }
+  }
+
+  const handleResizePointerUp = (e: React.PointerEvent) => {
+    if (!isResizing.current) return
+    isResizing.current = false
+    ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+    const deltaX = (e.clientX - startPos.current.x) / zoom
+    const newWidth = Math.max(40, startSize.current.width + deltaX)
+    const newHeight = Math.max(20, newWidth / aspectRatio)
+    onResize(sig.id, newWidth, newHeight)
+  }
+
+  return (
+    <div
+      ref={divRef}
+      className="absolute group"
+      style={{
+        left: sig.x * zoom,
+        top: (pageHeight - sig.y - sig.height) * zoom,
+        width: sig.width * zoom,
+        height: sig.height * zoom,
+        cursor: 'grab',
+        touchAction: 'none',
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    >
+      <img
+        src={sig.dataUrl}
+        alt="Signature"
+        className="w-full h-full object-contain pointer-events-none"
+        draggable={false}
+      />
+      <button
+        onClick={(e) => { e.stopPropagation(); onRemove(sig.id) }}
+        className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-400 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+        title={t('fillforms.signatureClear')}
+      >
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      {/* Resize handle */}
+      <div
+        data-resize-handle="true"
+        className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-500/80 hover:bg-blue-400 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+        style={{ cursor: 'nwse-resize', touchAction: 'none' }}
+        onPointerDown={handleResizePointerDown}
+        onPointerMove={handleResizePointerMove}
+        onPointerUp={handleResizePointerUp}
+      >
+        <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.5}>
+          <path d="M10 2L2 10M10 6L6 10" strokeLinecap="round" />
+        </svg>
       </div>
     </div>
   )
@@ -505,6 +705,18 @@ export default function FillPDF() {
     setFreeSignatures((prev) => prev.filter((s) => s.id !== id))
   }, [])
 
+  const handleMoveFreeSig = useCallback((id: string, newX: number, newY: number) => {
+    setFreeSignatures((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, x: newX, y: newY } : s)),
+    )
+  }, [])
+
+  const handleResizeFreeSig = useCallback((id: string, newWidth: number, newHeight: number) => {
+    setFreeSignatures((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, width: newWidth, height: newHeight } : s)),
+    )
+  }, [])
+
   const handleSave = async () => {
     if (!buffer) return
     setProcessing(true)
@@ -723,32 +935,16 @@ export default function FillPDF() {
             {freeSignatures
               .filter((s) => s.pageIndex === currentPage)
               .map((sig) => (
-                <div
+                <DraggableSignature
                   key={sig.id}
-                  className="absolute group"
-                  style={{
-                    left: sig.x * zoom,
-                    top: (pageHeight - sig.y - sig.height) * zoom,
-                    width: sig.width * zoom,
-                    height: sig.height * zoom,
-                  }}
-                >
-                  <img
-                    src={sig.dataUrl}
-                    alt="Signature"
-                    className="w-full h-full object-contain"
-                    draggable={false}
-                  />
-                  <button
-                    onClick={() => handleRemoveFreeSig(sig.id)}
-                    className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-400 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                    title={t('fillforms.signatureClear')}
-                  >
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+                  sig={sig}
+                  zoom={zoom}
+                  pageHeight={pageHeight}
+                  onMove={handleMoveFreeSig}
+                  onRemove={handleRemoveFreeSig}
+                  onResize={handleResizeFreeSig}
+                  t={t as (key: string) => string}
+                />
               ))}
           </div>
         </div>
