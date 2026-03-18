@@ -31,6 +31,16 @@ export interface FormFieldValue {
   rect?: { x: number; y: number; width: number; height: number }
 }
 
+export interface FreeSignature {
+  id: string
+  pageIndex: number
+  x: number
+  y: number
+  width: number
+  height: number
+  dataUrl: string
+}
+
 function detectFieldType(field: PDFField): FormFieldType {
   if (field instanceof PDFTextField) return 'text'
   if (field instanceof PDFCheckBox) return 'checkbox'
@@ -137,6 +147,7 @@ export async function fillFormFields(
   file: ArrayBuffer,
   values: FormFieldValue[],
   flatten: boolean,
+  freeSignatures: FreeSignature[] = [],
 ): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.load(file, LOAD_OPTS)
   const form = pdfDoc.getForm()
@@ -159,7 +170,22 @@ export async function fillFormFields(
     }
   }
 
-  // Draw signature images directly on the pages
+  // Draw free-placed signatures on the pages
+  for (const sig of freeSignatures) {
+    const page = pdfDoc.getPages()[sig.pageIndex]
+    if (!page) continue
+    const base64 = sig.dataUrl.split(',')[1]
+    const pngBytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+    const img = await pdfDoc.embedPng(pngBytes)
+    page.drawImage(img, {
+      x: sig.x,
+      y: sig.y,
+      width: sig.width,
+      height: sig.height,
+    })
+  }
+
+  // Draw AcroForm signature field images on the pages
   const signatureValues = values.filter((v) => v.type === 'signature' && v.signatureDataUrl && v.rect)
   for (const sig of signatureValues) {
     const dataUrl = sig.signatureDataUrl!

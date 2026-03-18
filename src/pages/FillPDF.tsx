@@ -3,7 +3,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import ToolLayout from '../components/ToolLayout'
 import FileDropzone from '../components/FileDropzone'
 import { extractFormFields, fillFormFields } from '../lib/pdf-form-operations'
-import type { FormFieldInfo, FormFieldValue } from '../lib/pdf-form-operations'
+import type { FormFieldInfo, FormFieldValue, FreeSignature } from '../lib/pdf-form-operations'
 import { downloadBlob } from '../lib/download'
 import { useTranslation } from '../i18n/useTranslation'
 import { Link } from 'react-router-dom'
@@ -136,6 +136,118 @@ function SignaturePad({
   )
 }
 
+function SignatureModal({
+  onConfirm,
+  onCancel,
+  t,
+}: {
+  onConfirm: (dataUrl: string) => void
+  onCancel: () => void
+  t: (key: string) => string
+}) {
+  const padRef = useRef<HTMLCanvasElement>(null)
+  const isDrawing = useRef(false)
+  const hasStrokes = useRef(false)
+
+  useEffect(() => {
+    const canvas = padRef.current
+    if (!canvas) return
+    canvas.width = 400
+    canvas.height = 150
+    const ctx = canvas.getContext('2d')!
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, 400, 150)
+  }, [])
+
+  const getPos = (e: React.PointerEvent) => {
+    const rect = padRef.current!.getBoundingClientRect()
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const canvas = padRef.current
+    if (!canvas) return
+    canvas.setPointerCapture(e.pointerId)
+    isDrawing.current = true
+    hasStrokes.current = true
+    const ctx = canvas.getContext('2d')!
+    const pos = getPos(e)
+    ctx.beginPath()
+    ctx.moveTo(pos.x, pos.y)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDrawing.current || !padRef.current) return
+    const ctx = padRef.current.getContext('2d')!
+    const pos = getPos(e)
+    ctx.lineWidth = 2.5
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = '#1e293b'
+    ctx.lineTo(pos.x, pos.y)
+    ctx.stroke()
+  }
+
+  const handlePointerUp = () => {
+    isDrawing.current = false
+  }
+
+  const handleClear = () => {
+    const canvas = padRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')!
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    hasStrokes.current = false
+  }
+
+  const handleConfirm = () => {
+    if (!padRef.current || !hasStrokes.current) return
+    onConfirm(padRef.current.toDataURL('image/png'))
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onCancel}>
+      <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-white font-semibold mb-4">{t('fillforms.signatureHint')}</h3>
+        <div className="border border-slate-600 rounded-lg overflow-hidden mb-4">
+          <canvas
+            ref={padRef}
+            className="w-full cursor-crosshair touch-none"
+            style={{ height: 150 }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={handleClear}
+            className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors"
+          >
+            {t('fillforms.signatureClear')}
+          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 text-slate-400 hover:text-white text-sm transition-colors"
+            >
+              {t('fillforms.cancel')}
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="px-5 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-500 transition-colors"
+            >
+              {t('fillforms.signaturePlace')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function FormFieldInput({
   field,
   value,
@@ -260,6 +372,9 @@ export default function FillPDF() {
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [freeSignatures, setFreeSignatures] = useState<FreeSignature[]>([])
+  const [showSigModal, setShowSigModal] = useState(false)
+  const [placingSigDataUrl, setPlacingSigDataUrl] = useState<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pdfDocRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null)
 
@@ -356,6 +471,40 @@ export default function FillPDF() {
     setValues((prev) => ({ ...prev, [key]: val }))
   }, [])
 
+  const handleSigModalConfirm = useCallback((dataUrl: string) => {
+    setShowSigModal(false)
+    setPlacingSigDataUrl(dataUrl)
+  }, [])
+
+  const handlePageClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!placingSigDataUrl || !canvasRef.current) return
+    const container = e.currentTarget
+    const rect = container.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const clickY = e.clientY - rect.top
+
+    // Convert screen coords to PDF coords
+    const sigWidthPx = 180 * zoom
+    const sigHeightPx = 60 * zoom
+    const pdfX = (clickX - sigWidthPx / 2) / zoom
+    const pdfY = pageHeight - (clickY + sigHeightPx / 2) / zoom
+
+    setFreeSignatures((prev) => [...prev, {
+      id: `sig_${Date.now()}`,
+      pageIndex: currentPage,
+      x: pdfX,
+      y: pdfY,
+      width: 180,
+      height: 60,
+      dataUrl: placingSigDataUrl,
+    }])
+    setPlacingSigDataUrl(null)
+  }, [placingSigDataUrl, zoom, pageHeight, currentPage])
+
+  const handleRemoveFreeSig = useCallback((id: string) => {
+    setFreeSignatures((prev) => prev.filter((s) => s.id !== id))
+  }, [])
+
   const handleSave = async () => {
     if (!buffer) return
     setProcessing(true)
@@ -363,7 +512,7 @@ export default function FillPDF() {
 
     try {
       const allValues = Object.values(values)
-      const result = await fillFormFields(buffer, allValues, flatten)
+      const result = await fillFormFields(buffer, allValues, flatten, freeSignatures)
       const name = file?.name ?? 'filled.pdf'
       const outputName = name.replace(/\.pdf$/i, '_filled.pdf')
       downloadBlob(result, outputName)
@@ -474,6 +623,17 @@ export default function FillPDF() {
           </button>
         </div>
 
+        {/* Add signature button */}
+        <button
+          onClick={() => setShowSigModal(true)}
+          className="px-3 py-2 bg-purple-600/80 text-white rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors flex items-center gap-1.5"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+          </svg>
+          {t('fillforms.addSignature')}
+        </button>
+
         {/* Flatten toggle */}
         <label className="flex items-center gap-2 cursor-pointer" title={t('fillforms.flattenHint')}>
           <input
@@ -503,6 +663,7 @@ export default function FillPDF() {
             setBuffer(null)
             setFields([])
             setValues({})
+            setFreeSignatures([])
             setCurrentPage(0)
             setPageCount(0)
           }}
@@ -514,16 +675,30 @@ export default function FillPDF() {
 
       {error && <p className="mb-4 text-red-400 text-sm">{error}</p>}
 
+      {/* Placement mode banner */}
+      {placingSigDataUrl && (
+        <div className="mb-4 px-4 py-3 bg-purple-600/20 border border-purple-500/40 rounded-xl flex items-center justify-between">
+          <span className="text-purple-300 text-sm">{t('fillforms.signaturePlaceHint')}</span>
+          <button
+            onClick={() => setPlacingSigDataUrl(null)}
+            className="text-purple-400 hover:text-white text-sm transition-colors"
+          >
+            {t('fillforms.cancel')}
+          </button>
+        </div>
+      )}
+
       {/* PDF viewer with overlay */}
       <div className="flex justify-center overflow-auto bg-slate-950/50 rounded-xl border border-slate-800/60 p-4">
         <div className="relative inline-block">
           <canvas ref={canvasRef} className="block" />
           <div
-            className="absolute top-0 left-0"
+            className={`absolute top-0 left-0 ${placingSigDataUrl ? 'cursor-crosshair' : ''}`}
             style={{
               width: canvasRef.current?.width ?? 0,
               height: canvasRef.current?.height ?? 0,
             }}
+            onClick={placingSigDataUrl ? handlePageClick : undefined}
           >
             {currentPageFields.map((field) => (
               <FormFieldInput
@@ -544,9 +719,49 @@ export default function FillPDF() {
                 t={t as (key: string) => string}
               />
             ))}
+            {/* Free-placed signatures on current page */}
+            {freeSignatures
+              .filter((s) => s.pageIndex === currentPage)
+              .map((sig) => (
+                <div
+                  key={sig.id}
+                  className="absolute group"
+                  style={{
+                    left: sig.x * zoom,
+                    top: (pageHeight - sig.y - sig.height) * zoom,
+                    width: sig.width * zoom,
+                    height: sig.height * zoom,
+                  }}
+                >
+                  <img
+                    src={sig.dataUrl}
+                    alt="Signature"
+                    className="w-full h-full object-contain"
+                    draggable={false}
+                  />
+                  <button
+                    onClick={() => handleRemoveFreeSig(sig.id)}
+                    className="absolute -top-2 -right-2 p-1 bg-red-500 hover:bg-red-400 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                    title={t('fillforms.signatureClear')}
+                  >
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
       </div>
+
+      {/* Signature drawing modal */}
+      {showSigModal && (
+        <SignatureModal
+          onConfirm={handleSigModalConfirm}
+          onCancel={() => setShowSigModal(false)}
+          t={t as (key: string) => string}
+        />
+      )}
     </ToolLayout>
   )
 }

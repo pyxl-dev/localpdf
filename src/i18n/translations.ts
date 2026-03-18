@@ -58,6 +58,10 @@ const en = {
   'fillforms.signature': 'Signature fields cannot be filled',
   'fillforms.signatureHint': 'Draw your signature',
   'fillforms.signatureClear': 'Clear signature',
+  'fillforms.addSignature': 'Add signature',
+  'fillforms.signaturePlace': 'Place on PDF',
+  'fillforms.signaturePlaceHint': 'Click on the PDF where you want to place the signature',
+  'fillforms.cancel': 'Cancel',
   'fillforms.prev': 'Previous',
   'fillforms.next': 'Next',
 
@@ -257,6 +261,10 @@ const fr: Record<TranslationKey, string> = {
   'fillforms.signature': 'Les champs de signature ne peuvent pas être remplis',
   'fillforms.signatureHint': 'Dessinez votre signature',
   'fillforms.signatureClear': 'Effacer la signature',
+  'fillforms.addSignature': 'Ajouter une signature',
+  'fillforms.signaturePlace': 'Placer sur le PDF',
+  'fillforms.signaturePlaceHint': 'Cliquez sur le PDF pour placer la signature',
+  'fillforms.cancel': 'Annuler',
   'fillforms.prev': 'Précédent',
   'fillforms.next': 'Suivant',
 
@@ -442,6 +450,10 @@ const es: Record<TranslationKey, string> = {
   'fillforms.signature': 'Los campos de firma no se pueden rellenar',
   'fillforms.signatureHint': 'Dibuja tu firma',
   'fillforms.signatureClear': 'Borrar firma',
+  'fillforms.addSignature': 'Añadir firma',
+  'fillforms.signaturePlace': 'Colocar en el PDF',
+  'fillforms.signaturePlaceHint': 'Haz clic en el PDF donde quieres colocar la firma',
+  'fillforms.cancel': 'Cancelar',
   'fillforms.prev': 'Anterior',
   'fillforms.next': 'Siguiente',
 
@@ -627,6 +639,10 @@ const it: Record<TranslationKey, string> = {
   'fillforms.signature': 'I campi firma non possono essere compilati',
   'fillforms.signatureHint': 'Disegna la tua firma',
   'fillforms.signatureClear': 'Cancella firma',
+  'fillforms.addSignature': 'Aggiungi firma',
+  'fillforms.signaturePlace': 'Posiziona sul PDF',
+  'fillforms.signaturePlaceHint': 'Clicca sul PDF dove vuoi posizionare la firma',
+  'fillforms.cancel': 'Annulla',
   'fillforms.prev': 'Precedente',
   'fillforms.next': 'Successivo',
 
